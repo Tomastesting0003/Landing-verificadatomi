@@ -173,9 +173,23 @@
     const btn = document.getElementById("waBtn");
     let clicked = false;
 
+    function trackMetaEvents(){
+      try{
+        if(typeof window.fbq === "function"){
+          // Señal 1: Contacto
+          window.fbq('track','Contact', { channel:'whatsapp' });
+
+          // Señal 2: “Compra” proxy (clic con intención fuerte)
+          // Recomendado para campaña de Ventas cuando el cierre es por WhatsApp
+          window.fbq('track','Purchase', { currency:'USD', value: 1.00 });
+        }
+      }catch(e){}
+    }
+
     function goWhatsApp(){
-      window.location.href =
-        "https://wa.me/" + PHONE_E164 + "?text=" + encodeURIComponent(MESSAGE);
+      const url = "https://wa.me/" + PHONE_E164 + "?text=" + encodeURIComponent(MESSAGE);
+      // Abrir en nueva pestaña suele ayudar a que el evento alcance a dispararse antes de salir
+      window.open(url, "_blank", "noopener,noreferrer");
     }
 
     btn.addEventListener("click", function(){
@@ -184,18 +198,18 @@
       btn.disabled = true;
       btn.style.opacity = "0.85";
 
-      try{
-        if(typeof window.fbq === "function"){
-          window.fbq('track','Contact', { channel:'whatsapp' });
-        }
-      }catch(e){}
+      // Disparar eventos
+      trackMetaEvents();
 
-      setTimeout(goWhatsApp, 250);
-      setTimeout(goWhatsApp, 1200);
+      // Fallback por si fbq carga tarde (reintento)
+      setTimeout(trackMetaEvents, 300);
+
+      // Redirección WhatsApp
+      setTimeout(goWhatsApp, 350);
+      setTimeout(goWhatsApp, 1300);
     });
   </script>
 </body>
 </html>
-
 
 
