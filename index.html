@@ -166,48 +166,32 @@
     <footer>+18 · Jugá con responsabilidad</footer>
   </div>
 
-  <script>
-    const PHONE_E164 = "5492236751113";
-    const MESSAGE = "Hola, vengo desde el anuncio. Quiero un usuario y reclamar el bono del 100%.";
+ <script>
+  const PHONE_E164 = "5492236751113";
+  const MESSAGE = "Hola, vengo desde el anuncio. Quiero un usuario y reclamar el bono del 100%.";
 
-    const btn = document.getElementById("waBtn");
-    let clicked = false;
+  const btn = document.getElementById("waBtn");
+  let fired = false;
 
-    function trackMetaEvents(){
-      try{
-        if(typeof window.fbq === "function"){
-          // Señal 1: Contacto
-          window.fbq('track','Contact', { channel:'whatsapp' });
+  function goWhatsApp(){
+    const url = "https://wa.me/" + PHONE_E164 + "?text=" + encodeURIComponent(MESSAGE);
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
-          // Señal 2: “Compra” proxy (clic con intención fuerte)
-          // Recomendado para campaña de Ventas cuando el cierre es por WhatsApp
-          window.fbq('track','Purchase', { currency:'USD', value: 1.00 });
-        }
-      }catch(e){}
-    }
+  btn.addEventListener("click", function(){
+    if (fired) return;
+    fired = true;
 
-    function goWhatsApp(){
-      const url = "https://wa.me/" + PHONE_E164 + "?text=" + encodeURIComponent(MESSAGE);
-      // Abrir en nueva pestaña suele ayudar a que el evento alcance a dispararse antes de salir
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
+    btn.disabled = true;
+    btn.style.opacity = "0.85";
 
-    btn.addEventListener("click", function(){
-      if(clicked) return;
-      clicked = true;
-      btn.disabled = true;
-      btn.style.opacity = "0.85";
+    try {
+      if (typeof fbq === "function") {
+        fbq('track', 'Contact', { channel: 'whatsapp' });
+        fbq('track', 'Purchase', { currency: 'USD', value: 1.00 });
+      }
+    } catch(e){}
 
-      // Disparar eventos
-      trackMetaEvents();
-
-      // Fallback por si fbq carga tarde (reintento)
-      setTimeout(trackMetaEvents, 300);
-
-      // Redirección WhatsApp
-      setTimeout(goWhatsApp, 350);
-      setTimeout(goWhatsApp, 1300);
-    });
-  </script>
-</body>
-</html>
+    setTimeout(goWhatsApp, 250);
+  });
+</script>
